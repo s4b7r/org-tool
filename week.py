@@ -185,6 +185,7 @@ def create_sum_window(root):
 def update_summary(sum_table, slot_grid):
     VERT = ['Proj', 'Self']
     HOR = ['Plan', 'Buff', 'Beig', 'Meet']
+    HOR_2 = ['PlBa']
 
     for i, name in enumerate(VERT):
         label = tk.Label(sum_table, text=name, name=f'vert_label_{name}')
@@ -198,7 +199,14 @@ def update_summary(sum_table, slot_grid):
     label = tk.Label(sum_table, text='Sum', name=f'hor_label_Sum')
     label.grid(row=0, column=N_HEADER_COLS, padx=5, pady=5)
 
-    sums = {k: 0 for k in VERT + HOR}
+    # sep =  Separator(sum_table, orient="vertical")
+    # sep.grid(row=0, column=len(HOR)+i+N_HEADER_COLS+N_SUM_COLS, sticky='ns')
+    
+    for i, name in enumerate(HOR_2):
+        label = tk.Label(sum_table, text=name, name=f'hor_label_{name}')
+        label.grid(row=0, column=len(HOR)+i+N_HEADER_COLS+N_SUM_COLS+(N_SUM_COLS_HOR2 := 1), padx=5, pady=5)
+    
+    sums = {k: 0 for k in VERT + HOR + HOR_2}
     for slot_row in slot_grid:
         for slot in slot_row:
             for k in sums:
@@ -211,14 +219,18 @@ def update_summary(sum_table, slot_grid):
     for i, name in enumerate(HOR):
         label = tk.Label(sum_table, text=f'{sums[name]:.2f}', name=f'sum_label_{name}')
         label.grid(row=N_HEADER_ROWS, column=i+N_HEADER_COLS+N_SUM_COLS, padx=5, pady=5)
-
+    
     label = tk.Label(sum_table, text=f'{sum((sums[k] for k in VERT)):.2f}', name=f'vert_sum')
     label.grid(row=len(VERT)+N_HEADER_ROWS+N_SUM_ROWS, column=N_HEADER_COLS, padx=5, pady=5)
     label = tk.Label(sum_table, text=f'{sum((sums[k] for k in HOR)):.2f}', name=f'hor_sum')
     label.grid(row=N_HEADER_ROWS, column=len(HOR)+N_HEADER_COLS+N_SUM_COLS, padx=5, pady=5)
 
-    sums_on_projects = {k: None for k in HOR}
-    for plan_cat in HOR:
+    for i, name in enumerate(HOR_2):
+        label = tk.Label(sum_table, text=f'{sums[name]:.2f}', name=f'sum_label_{name}')
+        label.grid(row=N_HEADER_ROWS, column=len(HOR)+i+N_HEADER_COLS+N_SUM_COLS+N_SUM_COLS_HOR2, padx=5, pady=5)
+
+    sums_on_projects = {k: None for k in HOR + HOR_2}
+    for plan_cat in sums_on_projects:
         sums_on_projects[plan_cat] = {k: 0 for k in VERT}
         for slot_row in slot_grid:
             for slot in slot_row:
@@ -233,6 +245,10 @@ def update_summary(sum_table, slot_grid):
         for j, plan_cat in enumerate(HOR):
             label = tk.Label(sum_table, text=f'{sums_on_projects[plan_cat][proj]:.2f}', name=f'sum_label_{proj}{plan_cat}')
             label.grid(row=N_HEADER_ROWS+N_SUM_ROWS+i, column=N_HEADER_COLS+N_SUM_COLS+j, padx=5, pady=5)
+        
+        for j, plan_cat in enumerate(HOR_2):
+            label = tk.Label(sum_table, text=f'{sums_on_projects[plan_cat][proj]:.2f}', name=f'sum_label_{proj}{plan_cat}')
+            label.grid(row=N_HEADER_ROWS+N_SUM_ROWS+i, column=len(HOR)+N_HEADER_COLS+N_SUM_COLS+N_SUM_COLS_HOR2+j, padx=5, pady=5)
 
 
 root = tk.Tk()
