@@ -12,7 +12,9 @@ from typing import Self
 # Define days and hours
 DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 HOURS = [f"{h}:00" for h in range(8, 17+1)]
-INPUT_CATEGORIES = ['Proj', 'Self', 'Plan', 'Buff', 'Beig', 'Meet']
+INPUT_CATEGORIES = ['Proj', 'Self', 'Plan', 'Buff', 'Beig', 'Meet', 'PlBa']
+
+OK_MISSING_DATA_ATTRIBUTES_FOR_VERSIONUPDATE = ['PlBa']
 
 ROWS_PER_HOUR = 4
 COLS_PER_DAY = len(INPUT_CATEGORIES) + (BUTTONS_PER_SLOT := 1)
@@ -51,7 +53,10 @@ class Timeslot:
     
     @data.setter
     def data(self, value):
-        self._data = Timeslot_Data(data=value)
+        self._data = Timeslot_Data(
+                                data=value, 
+                                ok_missing_attributes=OK_MISSING_DATA_ATTRIBUTES_FOR_VERSIONUPDATE
+                                )
         self.update_gui_childs()
 
     def add_gui_child(self, child, attr_name=None):
@@ -82,14 +87,22 @@ class Timeslot:
 class Timeslot_Data:
     RETURN_ATTRIBUTES = ['title', 'bg'] + INPUT_CATEGORIES
     
-    def __init__(self, data: Self = None):
+    def __init__(self, data: Self = None, *, ok_missing_attributes=None):
         self.title = ''
         self.bg = '#ffffff'
         for cat in INPUT_CATEGORIES:
             setattr(self, cat, 0.)
         if data:
             for attr in self.RETURN_ATTRIBUTES:
-                setattr(self, attr, getattr(data, attr))
+                try:
+                    val = getattr(data, attr)
+                except AttributeError as e:
+                    if e.name in ok_missing_attributes:
+                        if isinstance(ok_missing_attributes, dict):
+                            val = ok_missing_attributes[attr]
+                        else:
+                            val = 0.
+                setattr(self, attr, val)
 
     def __str__(self):
         return f'Timeslot_Data<{", ".join((f"{k}: {getattr(self, k)}" for k in self.RETURN_ATTRIBUTES))}>'
